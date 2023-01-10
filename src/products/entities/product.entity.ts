@@ -6,7 +6,9 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({
+    unique: true,
+  })
   title: string;
 
   @Column()

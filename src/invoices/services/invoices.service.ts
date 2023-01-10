@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateInvoiceDto } from '../dto/CreateInvoice.dto';
@@ -27,17 +27,56 @@ export class InvoicesService {
     return this.invoicesRepository.find({ where: { clientId } });
   }
 
-  async create(invoice: CreateInvoiceDto): Promise<Invoice> {
-    const newInvoice = this.invoicesRepository.create(invoice);
-    await this.invoicesRepository.save(newInvoice);
-    return newInvoice;
+  async create(invoice: CreateInvoiceDto): Promise<Invoice | HttpException> {
+    try {
+      // validate invoice already exists
+      const invoiceExists = await this.invoicesRepository.findOne({
+        where: { title: invoice.title },
+      });
+      if (invoiceExists) {
+        return new HttpException('Invoice already exists', HttpStatus.CONFLICT);
+      }
+      const newInvoice = this.invoicesRepository.create(invoice);
+      return await this.invoicesRepository.save(newInvoice);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  update(id, invoice: UpdateInvoiceDto) {
-    return this.invoicesRepository.update(id, invoice);
+  async update(
+    id,
+    invoice: UpdateInvoiceDto,
+  ): Promise<Invoice | HttpException> {
+    try {
+      const invoiceExists = await this.invoicesRepository.findOne(id);
+      if (!invoiceExists) {
+        return new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
+      }
+      const newInvoice = this.invoicesRepository.merge(invoiceExists, invoice);
+      return await this.invoicesRepository.save(newInvoice);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  remove(id) {
-    return this.invoicesRepository.delete(id);
+  async remove(id): Promise<Invoice | HttpException> {
+    try {
+      const invoiceExists = await this.invoicesRepository.findOne(id);
+      if (!invoiceExists) {
+        return new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
+      }
+      return await this.invoicesRepository.remove(invoiceExists);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateClientDto } from '../dto/CreateClient.dto';
@@ -23,17 +23,53 @@ export class ClientsService {
     return this.clientsRepository.find({ where: { companyId } });
   }
 
-  async create(client: CreateClientDto): Promise<Client> {
-    const newClient = this.clientsRepository.create(client);
-    await this.clientsRepository.save(newClient);
-    return newClient;
+  async create(client: CreateClientDto): Promise<Client | HttpException> {
+    try {
+      const newClient = this.clientsRepository.create(client);
+      return await this.clientsRepository.save(newClient);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  update(id, client: UpdateClientDto) {
-    return this.clientsRepository.update(id, client);
+  async update(id, client: UpdateClientDto): Promise<Client | HttpException> {
+    try {
+      const clientExists = await this.clientsRepository.findOne(id);
+      if (!clientExists) {
+        return new HttpException('Client not found', HttpStatus.NOT_FOUND);
+      }
+      const newClient = this.clientsRepository.merge(clientExists, client);
+      return await this.clientsRepository.save(newClient);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  remove(id) {
-    return this.clientsRepository.delete(id);
+  async remove(id) {
+    try {
+      const clientExists = await this.clientsRepository.findOne(id);
+      if (!clientExists) {
+        return new HttpException('Client not found', HttpStatus.NOT_FOUND);
+      }
+      const response = await this.clientsRepository.delete(id);
+      if (response.affected === 0) {
+        return new HttpException(
+          'Unexpected error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return response;
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

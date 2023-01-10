@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/createUser.dto';
@@ -19,17 +19,63 @@ export class UsersService {
     return this.usersRepository.findOne(id);
   }
 
-  async create(user: CreateUserDto): Promise<User> {
-    const newUser = this.usersRepository.create(user);
-    await this.usersRepository.save(newUser);
-    return newUser;
+  async create(user: CreateUserDto): Promise<User | HttpException> {
+    try {
+      // validate if user already exists
+      const userExists = await this.usersRepository.findOne({
+        where: { email: user.email },
+      });
+      if (userExists) {
+        return new HttpException('User already exists', HttpStatus.CONFLICT);
+      }
+      const newUser = this.usersRepository.create(user);
+      await this.usersRepository.save(newUser);
+      return newUser;
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  update(id, user: UpdateUserDto) {
-    return this.usersRepository.update(id, user);
+  async update(id, user: UpdateUserDto): Promise<User | HttpException> {
+    try {
+      const userExists = await this.usersRepository.findOne(id);
+      if (!userExists) {
+        return new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const newUser = this.usersRepository.merge(userExists, user);
+      await this.usersRepository.save(newUser);
+      return newUser;
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  remove(id) {
-    return this.usersRepository.delete(id);
+  async remove(id) {
+    try {
+      const userExists = await this.usersRepository.findOne(id);
+      if (!userExists) {
+        return new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      const response = await this.usersRepository.delete(id);
+      // validate if user was deleted with affected property
+      if (response.affected === 0) {
+        return new HttpException(
+          'Unexpected error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return response;
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

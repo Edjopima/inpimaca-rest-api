@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCompanyDto } from '../dto/CreateCompany.dto';
@@ -19,17 +19,62 @@ export class CompaniesService {
     return this.companiesRepository.findOne(id);
   }
 
-  async create(company: CreateCompanyDto): Promise<Company> {
-    const newCompany = this.companiesRepository.create(company);
-    await this.companiesRepository.save(newCompany);
-    return newCompany;
+  async create(company: CreateCompanyDto): Promise<Company | HttpException> {
+    try {
+      const companyExists = await this.companiesRepository.findOne({
+        where: { name: company.name },
+      });
+      if (companyExists) {
+        return new HttpException('Company already exists', HttpStatus.CONFLICT);
+      }
+      const newCompany = this.companiesRepository.create(company);
+      return await this.companiesRepository.save(newCompany);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  update(id, company: UpdateCompanyDto) {
-    return this.companiesRepository.update(id, company);
+  async update(
+    id,
+    company: UpdateCompanyDto,
+  ): Promise<Company | HttpException> {
+    try {
+      const companyExists = await this.companiesRepository.findOne(id);
+      if (!companyExists) {
+        return new HttpException('Company not found', HttpStatus.NOT_FOUND);
+      }
+      const newCompany = this.companiesRepository.merge(companyExists, company);
+      return await this.companiesRepository.save(newCompany);
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  remove(id) {
-    return this.companiesRepository.delete(id);
+  async remove(id) {
+    try {
+      const companyExists = await this.companiesRepository.findOne(id);
+      if (!companyExists) {
+        return new HttpException('Company not found', HttpStatus.NOT_FOUND);
+      }
+      const response = await this.companiesRepository.delete(id);
+      if (response.affected === 0) {
+        return new HttpException(
+          'Unexpected error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return response;
+    } catch (error) {
+      return new HttpException(
+        'Unexpected error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
