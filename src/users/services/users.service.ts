@@ -19,6 +19,10 @@ export class UsersService {
     return this.usersRepository.findOne(id);
   }
 
+  findByEmail(email) {
+    return this.usersRepository.findOne({ where: { email } });
+  }
+
   async create(user: CreateUserDto): Promise<User | HttpException> {
     try {
       // validate if user already exists

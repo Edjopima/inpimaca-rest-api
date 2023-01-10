@@ -5,6 +5,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { ProductsModule } from './products/products.module';
 import { ClientsModule } from './clients/clients.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { InvoicesModule } from './invoices/invoices.module';
     ProductsModule,
     ClientsModule,
     InvoicesModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

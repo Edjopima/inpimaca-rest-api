@@ -24,6 +24,9 @@ export class User {
   })
   role: number;
 
+  @Column()
+  companyId: number;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
