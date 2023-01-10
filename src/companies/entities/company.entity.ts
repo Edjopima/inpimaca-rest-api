@@ -14,7 +14,7 @@ export class Company {
   logo: string;
 
   @Column()
-  colors: string[];
+  colors: string;
 
   @Column()
   industry: string;
