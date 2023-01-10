@@ -5,4 +5,5 @@ export class UpdateUserDto {
   password?: string;
   role?: number;
   img?: string;
+  companyId?: number;
 }

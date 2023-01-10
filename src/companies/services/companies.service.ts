@@ -16,7 +16,8 @@ export class CompaniesService {
   }
 
   findOne(id) {
-    return this.companiesRepository.findOne(id);
+    console.log(id);
+    return this.companiesRepository.findOneBy({ id });
   }
 
   async create(company: CreateCompanyDto): Promise<Company | HttpException> {
@@ -42,7 +43,7 @@ export class CompaniesService {
     company: UpdateCompanyDto,
   ): Promise<Company | HttpException> {
     try {
-      const companyExists = await this.companiesRepository.findOne(id);
+      const companyExists = await this.companiesRepository.findOneBy({ id });
       if (!companyExists) {
         return new HttpException('Company not found', HttpStatus.NOT_FOUND);
       }
@@ -58,7 +59,7 @@ export class CompaniesService {
 
   async remove(id) {
     try {
-      const companyExists = await this.companiesRepository.findOne(id);
+      const companyExists = await this.companiesRepository.findOneBy({ id });
       if (!companyExists) {
         return new HttpException('Company not found', HttpStatus.NOT_FOUND);
       }

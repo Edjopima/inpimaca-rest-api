@@ -16,7 +16,7 @@ export class InvoicesService {
   }
 
   findOne(id) {
-    return this.invoicesRepository.findOne(id);
+    return this.invoicesRepository.findOneBy({ id });
   }
 
   findByCompany(companyId) {
@@ -51,7 +51,7 @@ export class InvoicesService {
     invoice: UpdateInvoiceDto,
   ): Promise<Invoice | HttpException> {
     try {
-      const invoiceExists = await this.invoicesRepository.findOne(id);
+      const invoiceExists = await this.invoicesRepository.findOneBy({ id });
       if (!invoiceExists) {
         return new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
       }
@@ -67,7 +67,7 @@ export class InvoicesService {
 
   async remove(id): Promise<Invoice | HttpException> {
     try {
-      const invoiceExists = await this.invoicesRepository.findOne(id);
+      const invoiceExists = await this.invoicesRepository.findOneBy({ id });
       if (!invoiceExists) {
         return new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
       }

@@ -16,7 +16,7 @@ export class ClientsService {
   }
 
   findOne(id) {
-    return this.clientsRepository.findOne(id);
+    return this.clientsRepository.findOneBy({ id });
   }
 
   findByCompany(companyId) {
@@ -37,7 +37,7 @@ export class ClientsService {
 
   async update(id, client: UpdateClientDto): Promise<Client | HttpException> {
     try {
-      const clientExists = await this.clientsRepository.findOne(id);
+      const clientExists = await this.clientsRepository.findOneBy({ id });
       if (!clientExists) {
         return new HttpException('Client not found', HttpStatus.NOT_FOUND);
       }
@@ -53,7 +53,7 @@ export class ClientsService {
 
   async remove(id) {
     try {
-      const clientExists = await this.clientsRepository.findOne(id);
+      const clientExists = await this.clientsRepository.findOneBy({ id });
       if (!clientExists) {
         return new HttpException('Client not found', HttpStatus.NOT_FOUND);
       }

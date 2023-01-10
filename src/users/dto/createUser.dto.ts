@@ -5,4 +5,5 @@ export class CreateUserDto {
   password: string;
   role?: number;
   img?: string;
+  companyId: number;
 }

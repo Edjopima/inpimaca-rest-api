@@ -16,7 +16,7 @@ export class ProductsService {
   }
 
   findOne(id) {
-    return this.productsRepository.findOne(id);
+    return this.productsRepository.findOneBy({ id });
   }
 
   findByCompany(companyId) {
@@ -47,7 +47,7 @@ export class ProductsService {
     product: UpdateProductDto,
   ): Promise<Product | HttpException> {
     try {
-      const productExists = await this.productsRepository.findOne(id);
+      const productExists = await this.productsRepository.findOneBy({ id });
       if (!productExists) {
         return new HttpException('Product not found', HttpStatus.NOT_FOUND);
       }
@@ -63,7 +63,7 @@ export class ProductsService {
 
   async remove(id) {
     try {
-      const productExists = await this.productsRepository.findOne(id);
+      const productExists = await this.productsRepository.findOneBy({ id });
       if (!productExists) {
         return new HttpException('Product not found', HttpStatus.NOT_FOUND);
       }

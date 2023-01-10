@@ -16,7 +16,7 @@ export class UsersService {
   }
 
   findOne(id) {
-    return this.usersRepository.findOne(id);
+    return this.usersRepository.findOneBy({ id });
   }
 
   findByEmail(email) {
@@ -45,7 +45,7 @@ export class UsersService {
 
   async update(id, user: UpdateUserDto): Promise<User | HttpException> {
     try {
-      const userExists = await this.usersRepository.findOne(id);
+      const userExists = await this.usersRepository.findOneBy({ id });
       if (!userExists) {
         return new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
@@ -62,7 +62,7 @@ export class UsersService {
 
   async remove(id) {
     try {
-      const userExists = await this.usersRepository.findOne(id);
+      const userExists = await this.usersRepository.findOneBy({ id });
       if (!userExists) {
         return new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
