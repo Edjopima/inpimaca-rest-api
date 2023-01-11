@@ -41,7 +41,14 @@ export class ClientsService {
       if (!clientExists) {
         return new HttpException('Client not found', HttpStatus.NOT_FOUND);
       }
-      const newClient = this.clientsRepository.merge(clientExists, client);
+      const temporalClient = {
+        ...client,
+        updatedAt: new Date(),
+      };
+      const newClient = this.clientsRepository.merge(
+        clientExists,
+        temporalClient,
+      );
       return await this.clientsRepository.save(newClient);
     } catch (error) {
       return new HttpException(

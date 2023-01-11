@@ -51,7 +51,14 @@ export class ProductsService {
       if (!productExists) {
         return new HttpException('Product not found', HttpStatus.NOT_FOUND);
       }
-      const newProduct = this.productsRepository.merge(productExists, product);
+      const temporalProduct = {
+        ...product,
+        updatedAt: new Date(),
+      };
+      const newProduct = this.productsRepository.merge(
+        productExists,
+        temporalProduct,
+      );
       return await this.productsRepository.save(newProduct);
     } catch (error) {
       return new HttpException(

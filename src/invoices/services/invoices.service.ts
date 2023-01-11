@@ -55,7 +55,14 @@ export class InvoicesService {
       if (!invoiceExists) {
         return new HttpException('Invoice not found', HttpStatus.NOT_FOUND);
       }
-      const newInvoice = this.invoicesRepository.merge(invoiceExists, invoice);
+      const temporalInvoice = {
+        ...invoice,
+        updatedAt: new Date(),
+      };
+      const newInvoice = this.invoicesRepository.merge(
+        invoiceExists,
+        temporalInvoice,
+      );
       return await this.invoicesRepository.save(newInvoice);
     } catch (error) {
       return new HttpException(

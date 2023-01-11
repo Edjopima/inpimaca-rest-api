@@ -47,7 +47,15 @@ export class CompaniesService {
       if (!companyExists) {
         return new HttpException('Company not found', HttpStatus.NOT_FOUND);
       }
-      const newCompany = this.companiesRepository.merge(companyExists, company);
+      // set timestamp at updatedAt
+      const temporalCompany = {
+        ...company,
+        updatedAt: new Date(),
+      };
+      const newCompany = this.companiesRepository.merge(
+        companyExists,
+        temporalCompany,
+      );
       return await this.companiesRepository.save(newCompany);
     } catch (error) {
       return new HttpException(

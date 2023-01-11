@@ -49,7 +49,11 @@ export class UsersService {
       if (!userExists) {
         return new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-      const newUser = this.usersRepository.merge(userExists, user);
+      const temporalUser = {
+        ...user,
+        updatedAt: new Date(),
+      };
+      const newUser = this.usersRepository.merge(userExists, temporalUser);
       await this.usersRepository.save(newUser);
       return newUser;
     } catch (error) {
